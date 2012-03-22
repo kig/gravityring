@@ -1,3 +1,4 @@
+
 function intToColor(i) {
   var r = (i >> 16) & 0xff;
   var g = (i >> 8) & 0xff;
@@ -50,13 +51,13 @@ function drawRibbon(ctx, o) {
   ctx.beginPath();
   ctx.moveTo(o.x, o.y);
   ctx.lineTo(o.x-o.vx*3, o.y-o.vy*3);
-  var dz = Math.abs(400 / (o.z - -400));
+  var dz = 400 / (Math.abs(o.z - -400) + 1);
   var d = Math.max(o.size, 10*6*Math.sqrt(o.vx*o.vx+o.vy*o.vy));
   ctx.save();
   ctx.globalAlpha = 0.5;
   ctx.translate(o.x, o.y);
   ctx.rotate(Math.atan2(o.vy,o.vx));
-  ctx.scale(3*dz*dz*dz*d/10, 3*dz*dz*dz*o.size/10);
+  ctx.scale(3*dz*dz*d/10, 3*dz*dz*o.size/10);
   ctx.drawImage(o.sprite, -0.5, -0.5, 1,1);
   ctx.restore();
 }
@@ -97,6 +98,9 @@ function drawExplosions(explosions, ctx) {
     }
 */
 
+function zsort(a,b) {
+  return b.z-a.z;
+};
 function updateObjects(objects, t, dt, mx, my, explosions, newExplosions, w, h) {
   for (var i=0; i<objects.length; i++) {
     var o = objects[i];
@@ -119,11 +123,10 @@ function updateObjects(objects, t, dt, mx, my, explosions, newExplosions, w, h) 
       o.y = sz;
       //o.vy = -o.vy*0.9;
     }
-    if (o.z < -200-sz && o.vz < 0) {
-      o.z = 200-sz;
-    } else if (o.z > 200-sz && o.vz > 0) {
-      o.z = -200-sz;
-      //o.vz = -o.vz*0.9;
+    if (o.z < -350-sz && o.vz < 0) {
+      o.vz = -o.vz;
+    } else if (o.z > 350-sz && o.vz > 0) {
+      o.vz = -o.vz;
     }
     o.vx *= 0.99;
     o.vy *= 0.99;
@@ -191,8 +194,10 @@ var init = function() {
     img.src = j+'.png';
     sprites.push(img);
   }
+  var ring = [];
   for (var i=0; i<n; i++) {
     objects.push(newObject(0, 0, 0));
+    ring.push(objects[i]);
     objects[i].x = mx;
     objects[i].y = my;
     objects[i].z = 0;
@@ -224,7 +229,7 @@ var init = function() {
     if (mx > 0) {
       for (var i=0; i<n; i++) {
         var a = t/200 + i/n * 2*Math.PI;
-        var o = objects[i];
+        var o = ring[i];
         var tx = mx + Math.cos(a)*16;
         var ty = my + Math.sin(a)*16;
         var dx = tx-o.x;
@@ -240,13 +245,14 @@ var init = function() {
 
     if (mx > 0) {
       for (var i=0; i<n; i++) {
-        var o = objects[i];
+        var o = ring[i];
         o.vx *= 0.85;// (0.5-Math.random()) * 5;
         o.vy *= 0.85;// (0.5-Math.random()) * 5;
         o.vz *= 0.85;// (0.5-Math.random()) * 5;
       }
     }
 
+    objects.sort(zsort);
     drawObjects(objects, ctx);
     drawExplosions(explosions, ctx);
     explosions.splice(0);
