@@ -52,7 +52,7 @@ function drawRibbon(ctx, o) {
   ctx.moveTo(o.x, o.y);
   ctx.lineTo(o.x-o.vx*3, o.y-o.vy*3);
   var dz = 400 / (Math.abs(o.z - -400) + 1);
-  var d = Math.max(o.size, 10*6*Math.sqrt(o.vx*o.vx+o.vy*o.vy));
+  var d = o.size+7*6*Math.sqrt(o.vx*o.vx+o.vy*o.vy);
   ctx.save();
   ctx.globalAlpha = 0.5;
   ctx.translate(o.x, o.y);
